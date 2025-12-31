@@ -83,8 +83,19 @@ $devicecacert = file_get_contents('certs/original/iPhoneDeviceCA.crt');
 # Cross-platform openssl.cnf path detection
 $openssl_cnf = '';
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-    # Windows (XAMPP)
-    $openssl_cnf = 'C:/XAMPP/php/extras/openssl/openssl.cnf';
+    # Windows - check common XAMPP locations
+    $possible_paths = array(
+        'C:/XAMPP/php/extras/openssl/openssl.cnf',
+        'C:/xampp/php/extras/openssl/openssl.cnf',
+        'D:/XAMPP/php/extras/openssl/openssl.cnf',
+        'D:/xampp/php/extras/openssl/openssl.cnf'
+    );
+    foreach ($possible_paths as $path) {
+        if (file_exists($path)) {
+            $openssl_cnf = $path;
+            break;
+        }
+    }
 } else {
     # Linux/Unix/Android - try common locations
     $possible_paths = array(
