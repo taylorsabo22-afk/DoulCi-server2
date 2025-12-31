@@ -4,7 +4,7 @@ include('tools/producttypes.php');
 
 $activation= (array_key_exists('activation-info-base64', $_POST) 
 			  ? base64_decode($_POST['activation-info-base64']) 
-			  : array_key_exists('activation-info', $_POST) ? $_POST['activation-info'] : '');
+			  : (array_key_exists('activation-info', $_POST) ? $_POST['activation-info'] : ''));
 $guid = array_key_exists('guid', $_POST) ? $_POST["guid"] : '-';
 
 if(!isset($activation) || empty($activation)) { exit('Only for iTunes access'); }
@@ -80,8 +80,45 @@ file_put_contents($devicefolder.'GUID.txt', $guid);
 $privkey = array(file_get_contents('certs/original/iPhoneDeviceCA_private.key'),"minacriss");
 $devicecacert = file_get_contents('certs/original/iPhoneDeviceCA.crt');
 
+# Cross-platform openssl.cnf path detection
+$openssl_cnf = '';
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+    # Windows - check common XAMPP locations
+    $possible_paths = array(
+        'C:/XAMPP/php/extras/openssl/openssl.cnf',
+        'C:/xampp/php/extras/openssl/openssl.cnf',
+        'D:/XAMPP/php/extras/openssl/openssl.cnf',
+        'D:/xampp/php/extras/openssl/openssl.cnf'
+    );
+    foreach ($possible_paths as $path) {
+        if (file_exists($path)) {
+            $openssl_cnf = $path;
+            break;
+        }
+    }
+} else {
+    # Linux/Unix/Android - try common locations
+    $possible_paths = array(
+        '/etc/ssl/openssl.cnf',
+        '/usr/lib/ssl/openssl.cnf',
+        '/system/etc/security/openssl.cnf',  # Android
+        '/etc/pki/tls/openssl.cnf',
+        '/usr/local/openssl/openssl.cnf',
+        '/usr/local/ssl/openssl.cnf'
+    );
+    foreach ($possible_paths as $path) {
+        if (file_exists($path)) {
+            $openssl_cnf = $path;
+            break;
+        }
+    }
+}
+
 #$config = array('digest_alg' => 'sha1');
-$config = array('config'=>'C:/XAMPP/php/extras/openssl/openssl.cnf', 'digest_alg' => 'sha1');
+$config = array('digest_alg' => 'sha1');
+if (!empty($openssl_cnf)) {
+    $config['config'] = $openssl_cnf;
+}
 
 $usercert = openssl_csr_sign($deviceCertRequest,$devicecacert,$privkey,1096, $config, '06');
 openssl_x509_export($usercert,$certout);
