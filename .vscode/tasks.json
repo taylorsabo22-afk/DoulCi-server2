@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "dotnet",
+			"task": "build c:\\Users\\Taylor\\Documents\\GitHub\\DoulCi-server2\\.vscode\\launch.json",
+			"file": "c:\\Users\\Taylor\\Documents\\GitHub\\DoulCi-server2\\.vscode\\launch.json",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "dotnet: build c:\\Users\\Taylor\\Documents\\GitHub\\DoulCi-server2\\.vscode\\launch.json"
+		}
+	]
+}
